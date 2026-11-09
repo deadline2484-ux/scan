@@ -38,8 +38,9 @@
         pw = land ? 841.89 : 595.28; ph = land ? 595.28 : 841.89;
         var s = Math.min(pw / pg.w, ph / pg.h);
         iw = pg.w * s; ih = pg.h * s; ix = (pw - iw) / 2; iy = (ph - ih) / 2;
-      } else {                       // 이미지 크기 그대로 (150dpi 기준)
-        pw = iw = pg.w * 72 / 150; ph = ih = pg.h * 72 / 150; ix = 0; iy = 0;
+      } else {                       // 이미지 크기 그대로 (여백 없이, 긴 변이 A4 정도가 되게)
+        var dpi = Math.max(150, Math.max(pg.w, pg.h) / 11.69);
+        pw = iw = pg.w * 72 / dpi; ph = ih = pg.h * 72 / dpi; ix = 0; iy = 0;
       }
       obj(pn, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + num(pw) + ' ' + num(ph) + '] ' +
               '/Resources << /XObject << /Im0 ' + im + ' 0 R >> >> /Contents ' + cn + ' 0 R >>');

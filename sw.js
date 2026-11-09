@@ -1,5 +1,5 @@
 /* 오프라인에서도 열리도록 앱 파일을 저장해 두는 서비스 워커 */
-var CACHE = 'docscan-v1';
+var CACHE = 'docscan-v2';
 var FILES = ['./', './index.html', './core.js', './pdf.js', './manifest.webmanifest',
              './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 

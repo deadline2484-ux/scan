@@ -322,18 +322,31 @@ main{padding:0 14px 220px}
       cx.fillStyle = '#fff'; cx.fill(); cx.lineWidth = 4; cx.strokeStyle = '#0b5fff'; cx.stroke();
     });
   }
+  function scaledImageData(src, maxSide) {
+    var s = Math.min(1, maxSide / Math.max(src.width, src.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(src.width * s)); c.height = Math.max(1, Math.round(src.height * s));
+    var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(src, 0, 0, c.width, c.height);
+    return { s: s, img: x.getImageData(0, 0, c.width, c.height) };
+  }
   function autoDetect() {
-    var sw = ed.src.width, sh = ed.src.height, s = Math.min(1, 260 / Math.max(sw, sh));
-    var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(sw * s)); c.height = Math.max(1, Math.round(sh * s));
-    var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(ed.src, 0, 0, c.width, c.height);
-    var q = null;
-    try { q = ScanCore.detectQuad(x.getImageData(0, 0, c.width, c.height)); } catch (e) { q = null; }
-    if (q) {
-      // 종이 경계의 어두운 가장자리가 섞이지 않도록 중심 쪽으로 0.8% 줄인다
-      var mx0 = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, my0 = (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4;
-      ed.pts = q.map(function (a) { return [(a[0] + (mx0 - a[0]) * 0.008) / s, (a[1] + (my0 - a[1]) * 0.008) / s]; });
-    }
-    else { var mx = sw * 0.05, my = sh * 0.05; ed.pts = [[mx, my], [sw - mx, my], [sw - mx, sh - my], [mx, sh - my]]; if (q === null) toast('모서리를 자동으로 못 찾았어요. 파란 점을 직접 맞춰 주세요.'); }
+    var sw = ed.src.width, sh = ed.src.height, info = null;
+    try {
+      var lo = scaledImageData(ed.src, 360);                 // 1) 작은 사진에서 문서 영역 찾기
+      info = ScanCore.detectQuadInfo(lo.img);
+      if (info) {
+        var hi = scaledImageData(ed.src, 1400), k = hi.s / lo.s; // 2) 큰 사진에서 경계를 정밀하게 다듬기
+        var q = ScanCore.refineQuad(hi.img, info.quad.map(function (p) { return [p[0] * k, p[1] * k]; }), info.bright);
+        var mx0 = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, my0 = (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4;
+        ed.pts = q.map(function (a) {                         // 배경이 섞이지 않게 0.3% 안쪽으로, 사진 밖 모서리는 사진 안으로
+          var x = (a[0] + (mx0 - a[0]) * 0.003) / hi.s, y = (a[1] + (my0 - a[1]) * 0.003) / hi.s;
+          return [Math.max(0, Math.min(sw, x)), Math.max(0, Math.min(sh, y))];
+        });
+      }
+    } catch (e) { info = null; }
+    if (!info) {
+      var mx = sw * 0.05, my = sh * 0.05; ed.pts = [[mx, my], [sw - mx, my], [sw - mx, sh - my], [mx, sh - my]];
+      toast('모서리를 자동으로 못 찾았어요. 파란 점을 직접 맞춰 주세요.');
+    } else if (info.score < 0.75) toast('자동으로 잡은 영역을 한번 확인해 주세요.');
     draw();
   }
   function rotate(dir) {

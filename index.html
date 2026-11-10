@@ -30,7 +30,10 @@ main{padding:0 14px 220px}
 .btn.kakao{background:#fee500;color:#191600}
 .btn.danger{background:#fdecea;color:var(--danger)}
 .btn:disabled{opacity:.45}
-.btn.small{padding:10px 12px;font-size:14px;border-radius:10px;width:auto}
+.btn.small{padding:10px 8px;font-size:14px;border-radius:10px;width:auto;white-space:nowrap}
+.btn.excel{background:#e3f3e9;color:#1d6f42}
+.row>.home{flex:0 0 46px}
+.bar .row{gap:7px}
 .row{display:flex;gap:10px}
 .row>*{flex:1}
 .empty{margin:28px 4px;text-align:center}
@@ -84,8 +87,10 @@ main{padding:0 14px 220px}
 #sMsg{font-size:14.5px;font-weight:700;text-align:center;flex:1}
 #sStage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #sWrap{position:relative}
-#vid{display:block;width:100%;height:100%;object-fit:fill;background:#111}
+#sWrap{overflow:hidden;background:#111}
+#vid{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;background:#111}
 #sOv{position:absolute;inset:0;width:100%;height:100%}
+#sRes{position:absolute;left:6px;bottom:5px;font-size:10.5px;color:rgba(255,255,255,.75);text-shadow:0 0 3px #000;pointer-events:none}
 #sFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
 .sbot{display:flex;align-items:center;justify-content:space-between;padding:12px 22px calc(14px + var(--safe-b))}
 #sThumb{width:58px;height:58px;border-radius:10px;border:2px solid #fff;background:#222 center/cover;position:relative;padding:0;visibility:hidden}
@@ -97,6 +102,19 @@ main{padding:0 14px 220px}
 .card img{cursor:pointer}
 .sub3{display:flex;gap:8px}
 .sub3>*{flex:1}
+#pv{position:fixed;inset:0;background:#3a3f48;z-index:30;display:none;flex-direction:column}
+#pv.on{display:flex}
+#pv .etop{background:#1c1f25}
+#pvInfo{background:#1c1f25;color:#cbd2dc;font-size:13px;text-align:center;padding:0 12px 9px;word-break:break-all}
+#pvBody{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 6px}
+.pvPage{margin:0 auto 16px;width:100%}
+#pvBody.zoom .pvPage{width:220%}
+.pvSheet{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pvSheet img{display:block;width:100%;height:100%;object-fit:contain}
+.pvCap{display:flex;align-items:center;justify-content:space-between;color:#e5e7eb;font-size:13px;padding:6px 2px 0}
+.pvCap button{border:0;border-radius:8px;background:#565d69;color:#fff;font-size:13px;padding:7px 12px}
+#pvHint{color:#aab2bf;font-size:12.5px;text-align:center;padding:0 0 10px}
+.pvBot{background:#fff;padding:10px 14px calc(10px + var(--safe-b));display:flex;flex-direction:column;gap:8px}
 #busy{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:12px}
 #busy.on{display:flex}
 .spin{width:42px;height:42px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 0.9s linear infinite}
@@ -154,8 +172,10 @@ main{padding:0 14px 220px}
   <div class="stack">
     <button class="btn kakao" id="shareBtn">💬 PDF 만들어 카카오톡으로 보내기</button>
     <div class="row">
-      <button class="btn small" id="saveBtn">PDF 저장/열기</button>
-      <button class="btn small danger" id="clearBtn">🏠 처음으로</button>
+      <button class="btn small" id="pvBtn">👁 미리보기</button>
+      <button class="btn small" id="saveBtn">PDF 저장</button>
+      <button class="btn small excel" id="xlsBtn">📊 엑셀</button>
+      <button class="btn small danger home" id="clearBtn" aria-label="처음으로">🏠</button>
     </div>
   </div>
 </div>
@@ -197,11 +217,25 @@ main{padding:0 14px 220px}
     <div id="sMsg">문서를 비춰 주세요</div>
     <button id="sAuto" class="tog on">자동 촬영</button>
   </div>
-  <div id="sStage"><div id="sWrap"><video id="vid" playsinline muted autoplay></video><canvas id="sOv"></canvas><div id="sFlash"></div></div></div>
+  <div id="sStage"><div id="sWrap"><video id="vid" playsinline muted autoplay></video><canvas id="sOv"></canvas><div id="sFlash"></div><div id="sRes"></div></div></div>
   <div class="sbot">
     <button id="sThumb" aria-label="찍은 문서 보기"><span id="sCount">0</span></button>
     <button id="sShot" aria-label="촬영"></button>
     <button id="sDone">완료</button>
+  </div>
+</div>
+
+<div id="pv">
+  <div class="etop">
+    <button id="pvBack">‹ 돌아가기</button>
+    <b>보내기 전 미리보기</b>
+    <button id="pvZoom">🔍 크게</button>
+  </div>
+  <div id="pvInfo"></div>
+  <div id="pvBody"></div>
+  <div class="pvBot">
+    <button class="btn kakao" id="pvSend">💬 카카오톡으로 보내기</button>
+    <button class="btn small" id="pvSave" style="width:100%">PDF 저장/열기</button>
   </div>
 </div>
 
@@ -227,7 +261,7 @@ main{padding:0 14px 220px}
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
-  var MAX_SRC = 2600, MAX_OUT = 2200;
+  var MAX_SRC = 3840, MAX_OUT = 2600, JPG_Q = 0.88;
   var FILTER_NAMES = { doc: '문서', bw: '흑백', color: '원본 색' };
   var state = { pages: [], filter: 'doc', nextId: 1, fix: { clean: true, straight: true }, ratio: 'auto' };
   var queue = [];           // 앨범에서 여러 장 선택했을 때 순서대로 편집
@@ -326,7 +360,7 @@ main{padding:0 14px 220px}
       var id = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, c.width, c.height);
       ScanCore.applyFilter(id, f);
       var oc = imageDataToCanvas(id);
-      page.out = await canvasToBytes(oc, 0.82); page.thumb = makeThumb(oc); page.filter = f;
+      page.out = await canvasToBytes(oc, JPG_Q); page.thumb = makeThumb(oc); page.filter = f;
     } catch (e) { toast(e.message); }
     busy(false); render();
   }
@@ -534,7 +568,7 @@ main{padding:0 14px 220px}
     var base = await canvasToBytes(imageDataToCanvas(warped), 0.92);
     ScanCore.applyFilter(warped, opt.filter);
     var oc = imageDataToCanvas(warped);
-    var out = await canvasToBytes(oc, 0.82);
+    var out = await canvasToBytes(oc, JPG_Q);
     var srcBytes = opt.srcBytes || await canvasToBytes(srcCanvas, 0.9);
     return { id: state.nextId++, src: srcBytes, pts: q, base: base, out: out, w: size[0], h: size[1], filter: opt.filter, thumb: makeThumb(oc) };
   }
@@ -565,18 +599,60 @@ main{padding:0 14px 220px}
   }
   function setAuto() { $('#sAuto').classList.toggle('on', sc.auto); $('#sAuto').textContent = sc.auto ? '자동 촬영 켜짐' : '자동 촬영 꺼짐'; }
   $('#sAuto').onclick = function () { sc.auto = !sc.auto; store('docscan_auto', sc.auto ? '1' : '0'); sc.stable = 0; setAuto(); };
+  /* 화면 배치: 카메라 영상을 캔버스에 직접 그린다 → 화면에 보이는 그림과 인식 테두리가 항상 같은 좌표를 쓴다.
+     (아이폰은 카메라가 열린 뒤에 영상 크기가 바뀌기도 해서, 매번 실제 크기를 확인한다) */
   function layoutScan() {
-    if (!vid.videoWidth) return;
-    var st = $('#sStage'), k = Math.min(st.clientWidth / vid.videoWidth, st.clientHeight / vid.videoHeight);
-    var w = Math.round(vid.videoWidth * k), h = Math.round(vid.videoHeight * k), wrap = $('#sWrap'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var vw = vid.videoWidth, vh = vid.videoHeight; if (!vw || !vh) return;
+    var st = $('#sStage'), sw = st.clientWidth, sh = st.clientHeight; if (!sw || !sh) return;
+    var key = vw + 'x' + vh + '@' + sw + 'x' + sh; if (key === sc.layKey) return;
+    sc.layKey = key;
+    var k = Math.min(sw / vw, sh / vh), w = Math.round(vw * k), h = Math.round(vh * k), wrap = $('#sWrap'), dpr = Math.min(window.devicePixelRatio || 1, 2);
     wrap.style.width = w + 'px'; wrap.style.height = h + 'px';
     sOv.width = Math.round(w * dpr); sOv.height = Math.round(h * dpr);
+    sc.prev = null; sc.stable = 0; sc.quad = null;
+    $('#sRes').textContent = vw + '×' + vh;
+  }
+  function paint() {
+    if (!sc.on) return;
+    sc.raf = requestAnimationFrame(paint);
+    if (vid.readyState < 2 || !vid.videoWidth) return;
+    layoutScan(); if (!sOv.width) return;
+    try { sctx.drawImage(vid, 0, 0, sOv.width, sOv.height); } catch (e) { return; }
+    if (!sc.quad) return;
+    sctx.beginPath();
+    sc.quad.forEach(function (p, i) { var x = p[0] * sOv.width, y = p[1] * sOv.height; i ? sctx.lineTo(x, y) : sctx.moveTo(x, y); });
+    sctx.closePath(); sctx.fillStyle = sc.color === 'g' ? 'rgba(34,197,94,.22)' : 'rgba(47,123,255,.18)'; sctx.fill();
+    sctx.lineWidth = Math.max(3, sOv.width / 130); sctx.lineJoin = 'round'; sctx.strokeStyle = sc.color === 'g' ? '#22c55e' : '#2f7bff'; sctx.stroke();
+  }
+  function trackSize(tr) { var g = tr.getSettings ? tr.getSettings() : {}; return [Math.max(g.width || 0, g.height || 0), Math.min(g.width || 0, g.height || 0)]; }
+  /* 카메라가 낼 수 있는 가장 높은 화질로 올린다. 정사각형처럼 잘린 영상이 나오면 다음 후보로 넘어간다. */
+  async function boostQuality(tr) {
+    if (!tr.applyConstraints) return;
+    var tries = [], caps = null;
+    try { caps = tr.getCapabilities ? tr.getCapabilities() : null; } catch (e) {}
+    if (caps && caps.width && caps.height && caps.width.max && caps.height.max) {
+      var L = Math.max(caps.width.max, caps.height.max), S = Math.min(caps.width.max, caps.height.max);
+      if (L / S >= 1.25) tries.push([L, S]);
+    }
+    tries.push([4032, 3024], [3840, 2160], [2560, 1440], [1920, 1080]);
+    var cur = trackSize(tr);
+    for (var i = 0; i < tries.length; i++) {
+      var t = tries[i];
+      if (cur[0] >= t[0] && cur[0] / Math.max(1, cur[1]) >= 1.25) break;          // 이미 그 이상이면 끝
+      try { await tr.applyConstraints({ width: { ideal: t[0] }, height: { ideal: t[1] } }); } catch (e) { continue; }
+      cur = trackSize(tr);
+      if (cur[0] >= Math.min(t[0], 1900) && cur[0] / Math.max(1, cur[1]) >= 1.25) break;
+    }
   }
   async function startStream() {
     sc.stream = await navigator.mediaDevices.getUserMedia({ audio: false,
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 } } });
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } });
+    var tr = sc.stream.getVideoTracks()[0];
     vid.srcObject = sc.stream;
     try { await vid.play(); } catch (e) {}
+    if (tr) { try { await boostQuality(tr); } catch (e) {} }
+    try { if (tr && tr.applyConstraints) await tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (e) {}
+    sc.layKey = '';
   }
   function stopStream() {
     if (sc.stream) sc.stream.getTracks().forEach(function (t) { t.stop(); });
@@ -589,11 +665,13 @@ main{padding:0 14px 220px}
     try { await startStream(); }
     catch (e) { closeScan(); toast('카메라를 열 수 없어요. 카메라 권한을 허용하거나 "고화질 촬영"을 눌러 주세요.'); return; }
     sMsg('문서를 비춰 주세요'); clearTimeout(sc.timer); sc.timer = setTimeout(scanTick, 300);
+    cancelAnimationFrame(sc.raf); sc.layKey = ''; paint();
   };
-  function closeScan() { sc.on = false; clearTimeout(sc.timer); stopStream(); $('#scan').classList.remove('on'); render(); }
+  function closeScan() { sc.on = false; clearTimeout(sc.timer); cancelAnimationFrame(sc.raf); stopStream(); $('#scan').classList.remove('on'); render(); }
   $('#sClose').onclick = $('#sDone').onclick = $('#sThumb').onclick = closeScan;
-  vid.addEventListener('loadedmetadata', layoutScan);
+  vid.addEventListener('loadedmetadata', layoutScan); vid.addEventListener('resize', layoutScan);
   window.addEventListener('resize', function () { if (sc.on) layoutScan(); });
+  window.addEventListener('orientationchange', function () { sc.layKey = ''; });
   document.addEventListener('visibilitychange', function () {      // 다른 앱에 다녀오면 카메라를 다시 연다
     if (!sc.on) return;
     if (document.hidden) stopStream();
@@ -614,19 +692,12 @@ main{padding:0 14px 220px}
     return sig;
   }
   function sigDiff(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]); return s / a.length; }
-  function drawOverlay(color) {
-    sctx.clearRect(0, 0, sOv.width, sOv.height);
-    if (!sc.quad) return;
-    sctx.beginPath();
-    sc.quad.forEach(function (p, i) { var x = p[0] * sOv.width, y = p[1] * sOv.height; i ? sctx.lineTo(x, y) : sctx.moveTo(x, y); });
-    sctx.closePath(); sctx.fillStyle = color === 'g' ? 'rgba(34,197,94,.22)' : 'rgba(47,123,255,.18)'; sctx.fill();
-    sctx.lineWidth = Math.max(3, sOv.width / 130); sctx.lineJoin = 'round'; sctx.strokeStyle = color === 'g' ? '#22c55e' : '#2f7bff'; sctx.stroke();
-  }
+  function drawOverlay(color) { sc.color = color; }      // 실제 그리기는 paint()에서
   function scanTick() {
     if (!sc.on) return;
     var next = 140;
     if (!sc.busy && !$('#editor').classList.contains('on') && vid.readyState >= 2 && vid.videoWidth) {
-      if (!sOv.width) layoutScan();
+      layoutScan();
       var vw = vid.videoWidth, vh = vid.videoHeight, k = 360 / Math.max(vw, vh), info = null, img;
       dcv.width = Math.round(vw * k); dcv.height = Math.round(vh * k);
       dctx.drawImage(vid, 0, 0, dcv.width, dcv.height);
@@ -686,11 +757,11 @@ main{padding:0 14px 220px}
     setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
   }
   function showDone(title) { $('#doneTitle').textContent = title; $('#done').classList.add('on'); }
-  function resetAll() { state.pages = []; queue = []; scanBadge(); $('#done').classList.remove('on'); render(); window.scrollTo(0, 0); }
+  function resetAll() { closePreview(); state.pages = []; queue = []; scanBadge(); $('#done').classList.remove('on'); render(); window.scrollTo(0, 0); }
   $('#newScan').onclick = function () { resetAll(); openScan(); };
   $('#goHome').onclick = resetAll;
   $('#stay').onclick = function () { $('#done').classList.remove('on'); };
-  $('#shareBtn').onclick = async function () {
+  async function sharePdf() {
     if (!state.pages.length) return;
     store('docscan_name', $('#fileName').value);
     var name = fileBase(), blob = makePdf(), file = new File([blob], name + '.pdf', { type: 'application/pdf' });
@@ -698,12 +769,73 @@ main{padding:0 14px 220px}
       try { await navigator.share({ files: [file], title: name }); showDone('보냈어요'); }
       catch (e) { if (e && e.name === 'AbortError') return; toast('공유에 실패해 PDF를 저장합니다'); download(blob, name + '.pdf'); showDone('PDF를 저장했어요'); }
     } else { toast('이 브라우저는 공유를 지원하지 않아 PDF를 저장합니다'); download(blob, name + '.pdf'); showDone('PDF를 저장했어요'); }
-  };
-  $('#saveBtn').onclick = function () {
+  }
+  function savePdf() {
     if (!state.pages.length) return;
     store('docscan_name', $('#fileName').value);
     download(makePdf(), fileBase() + '.pdf');
     setTimeout(function () { showDone('PDF를 저장했어요'); }, 600);
+  }
+
+  /* ---------- 보내기 전 미리보기 (PDF에 들어갈 모습 그대로) ---------- */
+  var pvUrls = [];
+  function closePreview() {
+    $('#pv').classList.remove('on'); $('#pvBody').innerHTML = ''; $('#pvBody').classList.remove('zoom');
+    pvUrls.forEach(function (u) { URL.revokeObjectURL(u); }); pvUrls = [];
+  }
+  function setZoom(on) { $('#pvBody').classList.toggle('zoom', on); $('#pvZoom').textContent = on ? '🔍 작게' : '🔍 크게'; }
+  function openPreview() {
+    var n = state.pages.length; if (!n) return;
+    closePreview(); setZoom(false);
+    var a4 = $('#pageSize').value === 'a4', total = 0, body = $('#pvBody');
+    state.pages.forEach(function (p, i) {
+      total += p.out.length;
+      var url = URL.createObjectURL(new Blob([p.out], { type: 'image/jpeg' })); pvUrls.push(url);
+      var d = document.createElement('div'); d.className = 'pvPage'; d.dataset.i = i;
+      d.innerHTML = '<div class="pvSheet"><img alt=""></div><div class="pvCap"><span></span><button>✏️ 이 쪽 수정</button></div>';
+      var sh = d.querySelector('.pvSheet'), land = p.w > p.h;
+      sh.style.aspectRatio = a4 ? (land ? '841.89 / 595.28' : '595.28 / 841.89') : (p.w + ' / ' + p.h);   // pdf.js와 같은 배치
+      d.querySelector('img').src = url;
+      d.querySelector('span').textContent = (i + 1) + ' / ' + n + '쪽 · ' + FILTER_NAMES[p.filter];
+      body.appendChild(d);
+    });
+    var h = document.createElement('div'); h.id = 'pvHint'; h.textContent = '종이를 누르면 크게 볼 수 있어요. 이상한 쪽은 "이 쪽 수정"을 누르세요.';
+    body.appendChild(h);
+    $('#pvInfo').textContent = fileBase() + '.pdf · ' + n + '쪽 · 약 ' + (total / 1048576).toFixed(1) + 'MB · ' + (a4 ? 'A4' : '사진 크기 그대로');
+    $('#pv').classList.add('on'); body.scrollTop = 0; body.scrollLeft = 0;
+  }
+  $('#pvBody').addEventListener('click', function (e) {
+    var pg = e.target.closest('.pvPage'); if (!pg) return;
+    if (e.target.closest('button')) { var i = +pg.dataset.i; closePreview(); reEdit(i); return; }
+    if (e.target.closest('.pvSheet')) {
+      var on = !$('#pvBody').classList.contains('zoom'); setZoom(on);
+      pg.scrollIntoView({ block: 'start' });
+    }
+  });
+  $('#pvZoom').onclick = function () { setZoom(!$('#pvBody').classList.contains('zoom')); };
+  $('#pvBack').onclick = closePreview;
+  $('#pvSend').onclick = sharePdf;
+  $('#pvSave').onclick = savePdf;
+  $('#shareBtn').onclick = sharePdf;
+  $('#pvBtn').onclick = function () { store('docscan_name', $('#fileName').value); openPreview(); };
+  $('#saveBtn').onclick = savePdf;
+  /* ---------- 글자 인식 → 엑셀 (ocr.js 는 이 버튼을 처음 누를 때만 불러온다) ---------- */
+  var ocrLoading = null;
+  function loadOcr() {
+    if (window.DocOCR) return Promise.resolve();
+    if (!ocrLoading) ocrLoading = new Promise(function (res, rej) {
+      var sEl = document.createElement('script'); sEl.src = 'ocr.js';
+      sEl.onload = function () { window.DocOCR ? res() : rej(new Error('load')); };
+      sEl.onerror = function () { sEl.remove(); ocrLoading = null; rej(new Error('load')); };
+      document.head.appendChild(sEl);
+    });
+    return ocrLoading;
+  }
+  $('#xlsBtn').onclick = function () {
+    if (!state.pages.length) return;
+    store('docscan_name', $('#fileName').value);
+    loadOcr().then(function () { window.DocOCR.open({ pages: state.pages, fileBase: fileBase, toast: toast, download: download }); })
+             .catch(function () { toast('엑셀 기능을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.'); });
   };
   $('#clearBtn').onclick = function () {
     if (state.pages.length && confirm('찍은 문서 ' + state.pages.length + '장을 지우고 처음 화면으로 갈까요?')) resetAll();

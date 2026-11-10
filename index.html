@@ -66,8 +66,37 @@ main{padding:0 14px 220px}
 .chips{display:flex;gap:8px;justify-content:center}
 .chip{border:1px solid #4b5563;background:transparent;color:#e5e7eb;border-radius:999px;padding:9px 16px;font-size:15px}
 .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+#fixes .chip,#ratios .chip{font-size:13.5px;padding:7px 12px}
 .tools{display:flex;gap:8px;justify-content:center}
 .tools button{border:0;border-radius:10px;background:#2a2f38;color:#fff;padding:10px 14px;font-size:15px}
+#done{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:40;display:none;align-items:flex-end}
+#done.on{display:flex}
+#done .sheet{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:22px 16px calc(16px + var(--safe-b));display:flex;flex-direction:column;gap:10px;text-align:center}
+#done .big{font-size:44px}
+#done b{font-size:19px}
+#done p{margin:0 0 6px;color:var(--sub);font-size:14px}
+#scan{position:fixed;inset:0;background:#000;z-index:15;display:none;flex-direction:column;color:#fff}
+#scan.on{display:flex}
+.stop{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + var(--safe-t)) 10px 8px}
+.stop button{border:0;background:transparent;color:#fff;font-size:16px;padding:8px 10px}
+.stop .tog{border:1px solid #6b7280;border-radius:999px;font-size:13.5px;padding:7px 12px}
+.stop .tog.on{background:#16a34a;border-color:#16a34a}
+#sMsg{font-size:14.5px;font-weight:700;text-align:center;flex:1}
+#sStage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#sWrap{position:relative}
+#vid{display:block;width:100%;height:100%;object-fit:fill;background:#111}
+#sOv{position:absolute;inset:0;width:100%;height:100%}
+#sFlash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+.sbot{display:flex;align-items:center;justify-content:space-between;padding:12px 22px calc(14px + var(--safe-b))}
+#sThumb{width:58px;height:58px;border-radius:10px;border:2px solid #fff;background:#222 center/cover;position:relative;padding:0;visibility:hidden}
+#sCount{position:absolute;right:-8px;top:-8px;background:var(--blue);color:#fff;border-radius:999px;min-width:22px;height:22px;font-size:13px;line-height:22px;font-weight:700}
+#sShot{width:74px;height:74px;border-radius:50%;border:5px solid #fff;background:transparent;padding:0;position:relative}
+#sShot::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+#sShot:active::after{background:#cbd5e1}
+#sDone{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:16px;padding:12px 16px;min-width:58px}
+.card img{cursor:pointer}
+.sub3{display:flex;gap:8px}
+.sub3>*{flex:1}
 #busy{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none;align-items:center;justify-content:center;color:#fff;flex-direction:column;gap:12px}
 #busy.on{display:flex}
 .spin{width:42px;height:42px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:s 0.9s linear infinite}
@@ -90,18 +119,23 @@ main{padding:0 14px 220px}
 
   <section id="emptyBox" class="empty">
     <div class="big">🧾</div>
-    <p>문서를 책상 위에 놓고 위에서 찍어 주세요.<br>모서리를 자동으로 찾아 반듯하게 펴 드립니다.</p>
+    <p>문서를 책상 위에 놓고 위에서 찍어 주세요.<br>문서를 비추면 자동으로 찾아서 찍고, 반듯하게 펴 드립니다.</p>
     <div class="stack">
-      <button class="btn primary" id="camBtn">📷 문서 촬영하기</button>
-      <button class="btn" id="libBtn">🖼️ 앨범에서 선택</button>
+      <button class="btn primary" id="scanBtn">📷 문서 스캔 시작</button>
+      <div class="sub3">
+        <button class="btn small" id="camBtn">고화질 촬영</button>
+        <button class="btn small" id="libBtn">앨범에서 선택</button>
+      </div>
     </div>
   </section>
 
   <section id="listBox" style="display:none">
     <div id="grid" class="grid"></div>
-    <div class="row">
-      <button class="btn" id="camBtn2">📷 한 장 더 촬영</button>
-      <button class="btn" id="libBtn2">🖼️ 앨범에서 추가</button>
+    <p style="margin:0 2px 10px;font-size:12.5px;color:var(--sub);text-align:center">사진을 누르면 영역·필터를 다시 맞출 수 있어요</p>
+    <button class="btn" id="scanBtn2">📷 이어서 스캔</button>
+    <div class="sub3" style="margin-top:8px">
+      <button class="btn small" id="camBtn2">고화질 촬영</button>
+      <button class="btn small" id="libBtn2">앨범에서 추가</button>
     </div>
     <div class="panel">
       <label for="fileName">PDF 파일 이름</label>
@@ -121,7 +155,7 @@ main{padding:0 14px 220px}
     <button class="btn kakao" id="shareBtn">💬 PDF 만들어 카카오톡으로 보내기</button>
     <div class="row">
       <button class="btn small" id="saveBtn">PDF 저장/열기</button>
-      <button class="btn small danger" id="clearBtn">전체 삭제</button>
+      <button class="btn small danger" id="clearBtn">🏠 처음으로</button>
     </div>
   </div>
 </div>
@@ -134,11 +168,20 @@ main{padding:0 14px 220px}
   </div>
   <div id="stage"><canvas id="cv"></canvas></div>
   <div class="etool">
-    <div class="hint">네 모서리의 파란 점을 문서 끝으로 끌어 맞추세요</div>
+    <div class="hint">모서리 점이나 변 가운데 점을 끌어 문서 끝에 맞추세요</div>
     <div class="chips" id="chips">
       <button class="chip on" data-f="doc">문서(추천)</button>
       <button class="chip" data-f="bw">흑백</button>
       <button class="chip" data-f="color">원본 색</button>
+    </div>
+    <div class="chips" id="ratios">
+      <button class="chip on" data-r="auto">비율 자동</button>
+      <button class="chip" data-r="a4">A4 고정</button>
+      <button class="chip" data-r="photo">찍힌 그대로</button>
+    </div>
+    <div class="chips" id="fixes">
+      <button class="chip on" data-k="clean">✓ 검은 테두리 지우기</button>
+      <button class="chip on" data-k="straight">✓ 휜 선 곧게</button>
     </div>
     <div class="tools">
       <button id="rotL">↺ 왼쪽 회전</button>
@@ -148,6 +191,30 @@ main{padding:0 14px 220px}
   </div>
 </div>
 
+<div id="scan">
+  <div class="stop">
+    <button id="sClose">✕ 닫기</button>
+    <div id="sMsg">문서를 비춰 주세요</div>
+    <button id="sAuto" class="tog on">자동 촬영</button>
+  </div>
+  <div id="sStage"><div id="sWrap"><video id="vid" playsinline muted autoplay></video><canvas id="sOv"></canvas><div id="sFlash"></div></div></div>
+  <div class="sbot">
+    <button id="sThumb" aria-label="찍은 문서 보기"><span id="sCount">0</span></button>
+    <button id="sShot" aria-label="촬영"></button>
+    <button id="sDone">완료</button>
+  </div>
+</div>
+
+<div id="done">
+  <div class="sheet">
+    <div class="big">✅</div>
+    <b id="doneTitle">보냈어요</b>
+    <p>다음 문서를 찍을까요? 지금 목록은 비워집니다.</p>
+    <button class="btn primary" id="newScan">📷 새 문서 촬영</button>
+    <button class="btn" id="goHome">🏠 처음 화면으로</button>
+    <button class="btn small" id="stay" style="width:100%;margin-top:2px;background:transparent">그대로 두기 (다시 보내기·수정)</button>
+  </div>
+</div>
 <div id="busy"><div class="spin"></div><div id="busyMsg">처리 중...</div></div>
 <div id="toast"></div>
 
@@ -160,14 +227,11 @@ main{padding:0 14px 220px}
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
-  // 원본 사진은 iPhone 기본 해상도(4032x3024)까지 그대로 쓴다.
-  // (사파리 캔버스 한계 약 1,670만 화소를 넘지 않게 면적으로도 제한)
-  var MAX_SRC_LONG = 4096, MAX_SRC_PIXELS = 12.6e6;
-  var MAX_OUT = 3508;                  // A4 를 300dpi 로 찍었을 때의 긴 변
-  var JPEG_OUT = 0.9, JPEG_BASE = 0.95;
+  var MAX_SRC = 2600, MAX_OUT = 2200;
   var FILTER_NAMES = { doc: '문서', bw: '흑백', color: '원본 색' };
-  var state = { pages: [], filter: 'doc', nextId: 1 };
+  var state = { pages: [], filter: 'doc', nextId: 1, fix: { clean: true, straight: true }, ratio: 'auto' };
   var queue = [];           // 앨범에서 여러 장 선택했을 때 순서대로 편집
+  var openScan = function () {};   // 아래 '실시간 스캔'에서 정의
 
   /* ---------- 작은 도구들 ---------- */
   function tick() { return new Promise(function (r) { setTimeout(r, 30); }); }
@@ -198,25 +262,6 @@ main{padding:0 14px 220px}
     var x = c.getContext('2d'); x.putImageData(new ImageData(id.data, id.width, id.height), 0, 0);
     return c;
   }
-  // 사파리는 다 쓴 캔버스 메모리를 늦게 돌려줘서 큰 사진 몇 장이면 캔버스가 하얗게 나온다 → 바로 비워 준다
-  function release(c) { if (c && c.width) { c.width = 0; c.height = 0; } }
-  async function encode(id, q) { var c = imageDataToCanvas(id); try { return await canvasToBytes(c, q); } finally { release(c); } }
-  function ctx2d(c) { var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; return x; }
-  /* 긴 변이 long 이 되도록 줄인 캔버스 (반씩 여러 번 줄여서 글자·모서리가 뭉개지지 않게) */
-  function shrink(src, long) {
-    var s = long / Math.max(src.width, src.height);
-    var tw = Math.max(1, Math.round(src.width * s)), th = Math.max(1, Math.round(src.height * s)), cur = src;
-    while (cur.width / 2 > tw * 1.05 && cur.height / 2 > th * 1.05) {
-      var h2 = document.createElement('canvas'); h2.width = Math.round(cur.width / 2); h2.height = Math.round(cur.height / 2);
-      ctx2d(h2).drawImage(cur, 0, 0, h2.width, h2.height);
-      if (cur !== src) release(cur);
-      cur = h2;
-    }
-    var c = document.createElement('canvas'); c.width = tw; c.height = th;
-    ctx2d(c).drawImage(cur, 0, 0, tw, th);
-    if (cur !== src) release(cur);
-    return c;
-  }
   function bytesToCanvas(bytes) {
     return new Promise(function (res, rej) {
       var url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })), im = new Image();
@@ -232,11 +277,10 @@ main{padding:0 14px 220px}
     return new Promise(function (res, rej) {
       var url = URL.createObjectURL(file), im = new Image();
       im.onload = function () {
-        var iw = im.naturalWidth, ih = im.naturalHeight;
-        var s = Math.min(1, MAX_SRC_LONG / Math.max(iw, ih), Math.sqrt(MAX_SRC_PIXELS / (iw * ih)));
+        var s = Math.min(1, MAX_SRC / Math.max(im.naturalWidth, im.naturalHeight));
         var c = document.createElement('canvas');
-        c.width = Math.max(1, Math.round(iw * s)); c.height = Math.max(1, Math.round(ih * s));
-        ctx2d(c).drawImage(im, 0, 0, c.width, c.height);
+        c.width = Math.max(1, Math.round(im.naturalWidth * s)); c.height = Math.max(1, Math.round(im.naturalHeight * s));
+        c.getContext('2d', { willReadFrequently: true }).drawImage(im, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url); res(c);
       };
       im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('사진을 열 수 없습니다. (지원하지 않는 형식일 수 있어요)')); };
@@ -265,6 +309,8 @@ main{padding:0 14px 220px}
     $('#info').textContent = n ? ('총 ' + n + '장 · 약 ' + (total / 1048576).toFixed(1) + 'MB') : '';
   }
   $('#grid').addEventListener('click', function (e) {
+    var im = e.target.closest('img');
+    if (im) { reEdit(+im.closest('.card').dataset.i); return; }
     var b = e.target.closest('button'); if (!b) return;
     var i = +b.closest('.card').dataset.i, a = b.dataset.a, p = state.pages;
     if (a === 'd') { p.splice(i, 1); render(); }
@@ -278,27 +324,33 @@ main{padding:0 14px 220px}
     try {
       var c = await bytesToCanvas(page.base);
       var id = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, c.width, c.height);
-      release(c);
       ScanCore.applyFilter(id, f);
       var oc = imageDataToCanvas(id);
-      page.out = await canvasToBytes(oc, JPEG_OUT); page.thumb = makeThumb(oc); page.filter = f;
-      release(oc);
+      page.out = await canvasToBytes(oc, 0.82); page.thumb = makeThumb(oc); page.filter = f;
     } catch (e) { toast(e.message); }
     busy(false); render();
   }
+  async function reEdit(i) {
+    var page = state.pages[i]; if (!page || !page.src) return;
+    busy(true, '사진 여는 중...'); await tick();
+    try { var c = await bytesToCanvas(page.src); busy(false); openEditor(c, i); }
+    catch (e) { busy(false); toast(e.message); }
+  }
   function makeThumb(canvas) {
-    if (Math.max(canvas.width, canvas.height) <= 360) return canvas.toDataURL('image/jpeg', 0.8);
-    var c = shrink(canvas, 360), url = c.toDataURL('image/jpeg', 0.8);
-    release(c);
-    return url;
+    var s = Math.min(1, 360 / Math.max(canvas.width, canvas.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(canvas.width * s)); c.height = Math.max(1, Math.round(canvas.height * s));
+    c.getContext('2d').drawImage(canvas, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.75);
   }
 
   /* ---------- 사진 받기 ---------- */
   function pick(input) { input.value = ''; input.click(); }
   $('#camBtn').onclick = $('#camBtn2').onclick = function () { pick($('#camInput')); };
+  $('#scanBtn').onclick = $('#scanBtn2').onclick = function () { openScan(); };
   $('#libBtn').onclick = $('#libBtn2').onclick = function () { pick($('#libInput')); };
   $('#camInput').onchange = $('#libInput').onchange = function (e) {
     var files = Array.prototype.slice.call(e.target.files || []);
+    e.target.value = '';                      // 같은 사진을 다시 골라도 동작하게
     if (!files.length) return;
     queue = files; nextInQueue();
   };
@@ -312,15 +364,35 @@ main{padding:0 14px 220px}
 
   /* ---------- 편집 화면 (모서리 맞추기) ---------- */
   var cv = $('#cv'), cx = cv.getContext('2d');
-  var ed = { src: null, pts: [], scale: 1, pad: 30, drag: -1, off: [0, 0], filter: 'doc', dpr: 1 };
-  function openEditor(canvas) {
-    ed.src = canvas; ed.filter = state.filter; ed.drag = -1;
-    $('#editor').classList.add('on'); setChips(); layoutEditor(); autoDetect();
+  var ed = { src: null, pts: [], scale: 1, pad: 30, drag: -1, filter: 'doc', dpr: 1, index: -1, srcBytes: null, orig: null, start: null, finger: null };
+  function openEditor(canvas, index) {
+    var page = index >= 0 ? state.pages[index] : null;
+    ed.src = canvas; ed.index = page ? index : -1; ed.srcBytes = page ? page.src : null;
+    ed.filter = page ? page.filter : state.filter;
+    $('#editor').classList.add('on'); setChips(); setFixes(); setRatios(); layoutEditor();
+    if (page) { ed.pts = page.pts.map(function (a) { return a.slice(); }); draw(); } else autoDetect();
   }
-  function closeEditor() { $('#editor').classList.remove('on'); release(ed.src); ed.src = null; }
+  function closeEditor() { $('#editor').classList.remove('on'); ed.src = null; }
   function setChips() {
     Array.prototype.forEach.call(document.querySelectorAll('#chips .chip'), function (c) { c.classList.toggle('on', c.dataset.f === ed.filter); });
   }
+  function setFixes() {
+    Array.prototype.forEach.call(document.querySelectorAll('#fixes .chip'), function (c) {
+      var on = state.fix[c.dataset.k]; c.classList.toggle('on', on);
+      c.textContent = (on ? '✓ ' : '') + (c.dataset.k === 'clean' ? '검은 테두리 지우기' : '휜 선 곧게');
+    });
+  }
+  function setRatios() {
+    Array.prototype.forEach.call(document.querySelectorAll('#ratios .chip'), function (c) { c.classList.toggle('on', c.dataset.r === state.ratio); });
+  }
+  $('#ratios').addEventListener('click', function (e) {
+    var c = e.target.closest('.chip'); if (!c) return;
+    state.ratio = c.dataset.r; store('docscan_ratio', state.ratio); setRatios();
+  });
+  $('#fixes').addEventListener('click', function (e) {
+    var c = e.target.closest('.chip'); if (!c) return;
+    state.fix[c.dataset.k] = !state.fix[c.dataset.k]; store('docscan_fix', JSON.stringify(state.fix)); setFixes();
+  });
   $('#chips').addEventListener('click', function (e) { var c = e.target.closest('.chip'); if (c) { ed.filter = c.dataset.f; setChips(); } });
   function layoutEditor() {
     if (!ed.src) return;
@@ -343,68 +415,71 @@ main{padding:0 14px 220px}
     ed.pts.forEach(function (q, i) { var x = p + q[0] * s, y = p + q[1] * s; i ? cx.lineTo(x, y) : cx.moveTo(x, y); });
     cx.closePath(); cx.fillStyle = 'rgba(11,95,255,0.16)'; cx.fill();
     cx.lineWidth = 2.5; cx.strokeStyle = '#2f7bff'; cx.stroke();
+    ed.pts.forEach(function (q, i) {                      // 변 가운데 손잡이
+      var n = ed.pts[(i + 1) % 4];
+      cx.beginPath(); cx.arc(p + (q[0] + n[0]) / 2 * s, p + (q[1] + n[1]) / 2 * s, 8, 0, 7);
+      cx.fillStyle = '#2f7bff'; cx.fill(); cx.lineWidth = 2.5; cx.strokeStyle = '#fff'; cx.stroke();
+    });
     ed.pts.forEach(function (q) {
       cx.beginPath(); cx.arc(p + q[0] * s, p + q[1] * s, 13, 0, 7);
       cx.fillStyle = '#fff'; cx.fill(); cx.lineWidth = 4; cx.strokeStyle = '#0b5fff'; cx.stroke();
     });
-    if (ed.drag >= 0) drawLoupe();
+    if (ed.drag >= 0 && ed.drag < 4) drawLoupe();
   }
-  /* 점을 끄는 동안 손가락에 가려지지 않게 손가락 위쪽에 확대경을 띄운다 */
+  /* 손가락에 가려지는 모서리를 크게 보여 주는 돋보기 */
   function drawLoupe() {
-    var s = ed.scale, p = ed.pad, q = ed.pts[ed.drag], src = ed.src;
-    var px = p + q[0] * s, py = p + q[1] * s, R = 54, Z = 3.5;
-    var W = cv.width / ed.dpr, H = cv.height / ed.dpr;
-    var lx = Math.max(R + 4, Math.min(W - R - 4, px)), ly = py - R - 46;
-    if (ly < R + 4) ly = py + R + 46;
-    var k = s * Z;                                     // 원본 1px → 확대경 k px
-    var sx0 = Math.max(0, q[0] - R / k), sy0 = Math.max(0, q[1] - R / k);
-    var sx1 = Math.min(src.width, q[0] + R / k), sy1 = Math.min(src.height, q[1] + R / k);
+    var s = ed.scale, q = ed.pts[ed.drag], W = cv.width / ed.dpr, R = Math.min(62, W * 0.2), k = s * 2.6;
+    var fx = ed.pad + q[0] * s, lx = fx < W / 2 ? W - R - 8 : R + 8, ly = R + 8;
     cx.save();
     cx.beginPath(); cx.arc(lx, ly, R, 0, 7); cx.clip();
-    cx.fillStyle = '#111'; cx.fillRect(lx - R, ly - R, 2 * R, 2 * R);
-    if (sx1 > sx0 && sy1 > sy0) {
-      cx.drawImage(src, sx0, sy0, sx1 - sx0, sy1 - sy0,
-                   lx + (sx0 - q[0]) * k, ly + (sy0 - q[1]) * k, (sx1 - sx0) * k, (sy1 - sy0) * k);
-    }
+    cx.fillStyle = '#000'; cx.fillRect(lx - R, ly - R, 2 * R, 2 * R);
+    cx.translate(lx, ly); cx.scale(k, k); cx.translate(-q[0], -q[1]);
+    cx.drawImage(ed.src, 0, 0);
     cx.beginPath();
-    ed.pts.forEach(function (a, i) { var x = lx + (a[0] - q[0]) * k, y = ly + (a[1] - q[1]) * k; i ? cx.lineTo(x, y) : cx.moveTo(x, y); });
-    cx.closePath(); cx.lineWidth = 1.5; cx.strokeStyle = '#2f7bff'; cx.stroke();
-    cx.beginPath(); cx.moveTo(lx - 9, ly); cx.lineTo(lx + 9, ly); cx.moveTo(lx, ly - 9); cx.lineTo(lx, ly + 9);
-    cx.lineWidth = 1.5; cx.strokeStyle = '#ff3b30'; cx.stroke();
+    ed.pts.forEach(function (a, i) { i ? cx.lineTo(a[0], a[1]) : cx.moveTo(a[0], a[1]); });
+    cx.closePath(); cx.lineWidth = 2 / k; cx.strokeStyle = '#2f7bff'; cx.stroke();
     cx.restore();
     cx.beginPath(); cx.arc(lx, ly, R, 0, 7); cx.lineWidth = 3; cx.strokeStyle = '#fff'; cx.stroke();
+    cx.beginPath(); cx.moveTo(lx - 10, ly); cx.lineTo(lx + 10, ly); cx.moveTo(lx, ly - 10); cx.lineTo(lx, ly + 10);
+    cx.lineWidth = 1.5; cx.strokeStyle = '#ff3b30'; cx.stroke();
+  }
+  function scaledImageData(src, maxSide) {
+    var s = Math.min(1, maxSide / Math.max(src.width, src.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(src.width * s)); c.height = Math.max(1, Math.round(src.height * s));
+    var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(src, 0, 0, c.width, c.height);
+    return { s: s, img: x.getImageData(0, 0, c.width, c.height) };
+  }
+  /* 사진에서 문서 모서리 찾기 → { info, pts } (못 찾으면 info = null) */
+  function detectPts(srcCanvas) {
+    var sw = srcCanvas.width, sh = srcCanvas.height, info = null, pts = null;
+    try {
+      var lo = scaledImageData(srcCanvas, 360);              // 1) 작은 사진에서 문서 영역 찾기
+      info = ScanCore.detectQuadInfo(lo.img);
+      if (info) {
+        var hi = scaledImageData(srcCanvas, 1400), k = hi.s / lo.s; // 2) 큰 사진에서 경계를 정밀하게 다듬기
+        var q = ScanCore.refineQuad(hi.img, info.quad.map(function (p) { return [p[0] * k, p[1] * k]; }), info.bright);
+        var mx0 = (q[0][0] + q[1][0] + q[2][0] + q[3][0]) / 4, my0 = (q[0][1] + q[1][1] + q[2][1] + q[3][1]) / 4;
+        pts = q.map(function (a) {                            // 배경이 섞이지 않게 0.3% 안쪽으로, 사진 밖 모서리는 사진 안으로
+          var x = (a[0] + (mx0 - a[0]) * 0.003) / hi.s, y = (a[1] + (my0 - a[1]) * 0.003) / hi.s;
+          return [Math.max(0, Math.min(sw, x)), Math.max(0, Math.min(sh, y))];
+        });
+      }
+    } catch (e) { info = null; }
+    return { info: info, pts: pts };
   }
   function autoDetect() {
-    var src = ed.src, sw = src.width, sh = src.height, q = null;
-    // 축소 사진의 픽셀 좌표 → 큰 사진의 픽셀 좌표
-    function up(pt, a, b) { return [(pt[0] + 0.5) * b.width / a.width - 0.5, (pt[1] + 0.5) * b.height / a.height - 0.5]; }
-    var small = null, mid = null;
-    try {
-      small = shrink(src, ScanCore.DETECT_SIZE);
-      q = ScanCore.detectQuad(ctx2d(small).getImageData(0, 0, small.width, small.height));
-      if (q) {
-        // 더 큰 사진에서 변 위치를 1px 단위로 다시 맞춘다
-        mid = Math.max(sw, sh) > ScanCore.REFINE_SIZE * 1.1 ? shrink(src, ScanCore.REFINE_SIZE) : src;
-        q = q.map(function (a) { return up(a, small, mid); });
-        q = ScanCore.refineQuad(ctx2d(mid).getImageData(0, 0, mid.width, mid.height), q);
-        q = q.map(function (a) { return up(a, mid, src); });
-        // 종이 바깥의 책상이 한 줄이라도 섞이지 않도록 아주 조금(긴 변의 0.25%) 안쪽으로
-        q = ScanCore.insetQuad(q, Math.max(2, Math.round(Math.max(sw, sh) * 0.0025)));
-        q = q.map(function (a) { return [Math.max(0, Math.min(sw, a[0])), Math.max(0, Math.min(sh, a[1]))]; });
-      }
-    } catch (e) { q = null; }
-    release(small); if (mid !== src) release(mid);
-    if (q) ed.pts = q;
-    else {
-      var mx = sw * 0.03, my = sh * 0.03; ed.pts = [[mx, my], [sw - mx, my], [sw - mx, sh - my], [mx, sh - my]];
+    var sw = ed.src.width, sh = ed.src.height, det = detectPts(ed.src), info = det.info;
+    if (info) ed.pts = det.pts;
+    if (!info) {
+      var mx = sw * 0.05, my = sh * 0.05; ed.pts = [[mx, my], [sw - mx, my], [sw - mx, sh - my], [mx, sh - my]];
       toast('모서리를 자동으로 못 찾았어요. 파란 점을 직접 맞춰 주세요.');
-    }
+    } else if (info.score < 0.75) toast('자동으로 잡은 영역을 한번 확인해 주세요.');
     draw();
   }
   function rotate(dir) {
     var s = ed.src, c = document.createElement('canvas'); c.width = s.height; c.height = s.width;
-    var x = ctx2d(c); x.translate(c.width / 2, c.height / 2); x.rotate(dir * Math.PI / 2); x.drawImage(s, -s.width / 2, -s.height / 2);
-    release(s); ed.src = c; layoutEditor(); autoDetect();
+    var x = c.getContext('2d', { willReadFrequently: true }); x.translate(c.width / 2, c.height / 2); x.rotate(dir * Math.PI / 2); x.drawImage(s, -s.width / 2, -s.height / 2);
+    ed.src = c; ed.srcBytes = null; layoutEditor(); autoDetect();
   }
   $('#rotL').onclick = function () { rotate(-1); };
   $('#rotR').onclick = function () { rotate(1); };
@@ -417,52 +492,188 @@ main{padding:0 14px 220px}
   cv.addEventListener('pointerdown', function (e) {
     var m = ptr(e), best = -1, bd = 48;
     ed.pts.forEach(function (q, i) { var d = Math.hypot(ed.pad + q[0] * ed.scale - m[0], ed.pad + q[1] * ed.scale - m[1]); if (d < bd) { bd = d; best = i; } });
-    if (best >= 0) {
-      ed.drag = best;
-      // 손가락과 점 사이 간격을 유지 (점이 손가락 밑으로 튀지 않게)
-      ed.off = [ed.pts[best][0] - (m[0] - ed.pad) / ed.scale, ed.pts[best][1] - (m[1] - ed.pad) / ed.scale];
-      try { cv.setPointerCapture(e.pointerId); } catch (x) {}
-      draw();
+    if (best < 0) {                                         // 변 가운데 손잡이
+      bd = 34;
+      ed.pts.forEach(function (q, i) {
+        var n = ed.pts[(i + 1) % 4], d = Math.hypot(ed.pad + (q[0] + n[0]) / 2 * ed.scale - m[0], ed.pad + (q[1] + n[1]) / 2 * ed.scale - m[1]);
+        if (d < bd) { bd = d; best = 4 + i; }
+      });
+      if (best >= 0) { ed.start = m; ed.orig = ed.pts.map(function (a) { return a.slice(); }); }
     }
+    if (best >= 0) { ed.drag = best; try { cv.setPointerCapture(e.pointerId); } catch (x) {} draw(); }
     e.preventDefault();
   });
   cv.addEventListener('pointermove', function (e) {
     if (ed.drag < 0) return;
-    var m = ptr(e);
-    ed.pts[ed.drag] = [Math.max(0, Math.min(ed.src.width, (m[0] - ed.pad) / ed.scale + ed.off[0])),
-                       Math.max(0, Math.min(ed.src.height, (m[1] - ed.pad) / ed.scale + ed.off[1]))];
+    var m = ptr(e), W = ed.src.width, H = ed.src.height;
+    if (ed.drag < 4) ed.pts[ed.drag] = [Math.max(0, Math.min(W, (m[0] - ed.pad) / ed.scale)), Math.max(0, Math.min(H, (m[1] - ed.pad) / ed.scale))];
+    else {
+      var dx = (m[0] - ed.start[0]) / ed.scale, dy = (m[1] - ed.start[1]) / ed.scale;
+      [ed.drag - 4, (ed.drag - 3) % 4].forEach(function (j) {
+        ed.pts[j] = [Math.max(0, Math.min(W, ed.orig[j][0] + dx)), Math.max(0, Math.min(H, ed.orig[j][1] + dy))];
+      });
+    }
     draw(); e.preventDefault();
   });
-  function endDrag() { if (ed.drag >= 0) { ed.drag = -1; draw(); } }
+  function endDrag() { ed.drag = -1; draw(); }
   cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
 
+  /* 원본 사진 + 모서리 → 완성된 한 쪽 (펴기, 테두리 정리, 휜 선 보정, 필터) */
+  async function buildPage(srcCanvas, pts, opt, step) {
+    step = step || function () { return tick(); };
+    var src = srcCanvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+    var q = pts.map(function (a) { return a.slice(); });
+    var size = ScanCore.outputSizeMode(q, MAX_OUT, opt.ratio, srcCanvas.width, srcCanvas.height);
+    var warped = ScanCore.warp(src, q, size[0], size[1]);
+    if (opt.fix.clean) { await step('검은 테두리 지우는 중...'); ScanCore.cleanEdges(warped); }
+    if (opt.fix.straight) {
+      await step('휜 선 곧게 펴는 중...');
+      warped = ScanCore.straighten(warped).img;
+      if (opt.fix.clean) ScanCore.cleanEdges(warped);
+    }
+    var base = await canvasToBytes(imageDataToCanvas(warped), 0.92);
+    ScanCore.applyFilter(warped, opt.filter);
+    var oc = imageDataToCanvas(warped);
+    var out = await canvasToBytes(oc, 0.82);
+    var srcBytes = opt.srcBytes || await canvasToBytes(srcCanvas, 0.9);
+    return { id: state.nextId++, src: srcBytes, pts: q, base: base, out: out, w: size[0], h: size[1], filter: opt.filter, thumb: makeThumb(oc) };
+  }
   $('#eOk').onclick = async function () {
     if (!ed.src) return;
     busy(true, '문서를 반듯하게 펴는 중...'); await tick();
     try {
-      var q = ed.pts.map(function (a) { return a.slice(); });
-      var size = ScanCore.outputSize(q, MAX_OUT);
-      // 문서가 있는 부분만 원본 해상도로 읽는다 (메모리 절약)
-      var xs = q.map(function (a) { return a[0]; }), ys = q.map(function (a) { return a[1]; });
-      var x0 = Math.max(0, Math.floor(Math.min.apply(null, xs)) - 2), y0 = Math.max(0, Math.floor(Math.min.apply(null, ys)) - 2);
-      var x1 = Math.min(ed.src.width, Math.ceil(Math.max.apply(null, xs)) + 2), y1 = Math.min(ed.src.height, Math.ceil(Math.max.apply(null, ys)) + 2);
-      var src = ed.src.getContext('2d', { willReadFrequently: true }).getImageData(x0, y0, x1 - x0, y1 - y0);
-      q = q.map(function (a) { return [a[0] - x0, a[1] - y0]; });
-      var warped = ScanCore.warp(src, q, size[0], size[1]);
-      src = null;
-      var base = await encode(warped, JPEG_BASE);
-      ScanCore.applyFilter(warped, ed.filter);
-      var oc = imageDataToCanvas(warped);
-      var out = await canvasToBytes(oc, JPEG_OUT);
-      var thumb = makeThumb(oc);
-      release(oc);
-      state.pages.push({ id: state.nextId++, base: base, out: out, w: size[0], h: size[1], filter: ed.filter, thumb: thumb });
+      var page = await buildPage(ed.src, ed.pts, { filter: ed.filter, ratio: state.ratio, fix: state.fix, srcBytes: ed.srcBytes },
+                                 function (msg) { busy(true, msg); return tick(); });
+      if (ed.index >= 0 && state.pages[ed.index]) state.pages[ed.index] = page; else state.pages.push(page);
       state.filter = ed.filter;
-      closeEditor(); render();
+      closeEditor(); render(); scanBadge();
       busy(false);
       if (queue.length) nextInQueue();
     } catch (e) { busy(false); toast('처리 실패: ' + e.message); }
   };
+
+  /* ---------- 실시간 스캔 (문서 자동 인식 · 자동 촬영 · 연속 스캔) ---------- */
+  var vid = $('#vid'), sOv = $('#sOv'), sctx = sOv.getContext('2d');
+  var dcv = document.createElement('canvas'), dctx = dcv.getContext('2d', { willReadFrequently: true });
+  var sc = { on: false, stream: null, timer: 0, busy: false, auto: store('docscan_auto') !== '0', prev: null, stable: 0, quad: null,
+             lock: null, lockSig: null, lockAt: 0, sig: null };
+  function sMsg(t) { $('#sMsg').textContent = t; }
+  function scanBadge() {
+    var n = state.pages.length, t = $('#sThumb');
+    t.style.visibility = n ? 'visible' : 'hidden'; $('#sCount').textContent = n;
+    if (n) t.style.backgroundImage = 'url(' + state.pages[n - 1].thumb + ')';
+  }
+  function setAuto() { $('#sAuto').classList.toggle('on', sc.auto); $('#sAuto').textContent = sc.auto ? '자동 촬영 켜짐' : '자동 촬영 꺼짐'; }
+  $('#sAuto').onclick = function () { sc.auto = !sc.auto; store('docscan_auto', sc.auto ? '1' : '0'); sc.stable = 0; setAuto(); };
+  function layoutScan() {
+    if (!vid.videoWidth) return;
+    var st = $('#sStage'), k = Math.min(st.clientWidth / vid.videoWidth, st.clientHeight / vid.videoHeight);
+    var w = Math.round(vid.videoWidth * k), h = Math.round(vid.videoHeight * k), wrap = $('#sWrap'), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    wrap.style.width = w + 'px'; wrap.style.height = h + 'px';
+    sOv.width = Math.round(w * dpr); sOv.height = Math.round(h * dpr);
+  }
+  async function startStream() {
+    sc.stream = await navigator.mediaDevices.getUserMedia({ audio: false,
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 } } });
+    vid.srcObject = sc.stream;
+    try { await vid.play(); } catch (e) {}
+  }
+  function stopStream() {
+    if (sc.stream) sc.stream.getTracks().forEach(function (t) { t.stop(); });
+    sc.stream = null; vid.srcObject = null;
+  }
+  openScan = async function () {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('이 브라우저는 실시간 스캔이 안 돼요. "고화질 촬영"을 눌러 주세요.'); return; }
+    $('#scan').classList.add('on'); sc.on = true; sc.prev = null; sc.stable = 0; sc.quad = null; sc.lock = null;
+    setAuto(); scanBadge(); sMsg('카메라 여는 중...');
+    try { await startStream(); }
+    catch (e) { closeScan(); toast('카메라를 열 수 없어요. 카메라 권한을 허용하거나 "고화질 촬영"을 눌러 주세요.'); return; }
+    sMsg('문서를 비춰 주세요'); clearTimeout(sc.timer); sc.timer = setTimeout(scanTick, 300);
+  };
+  function closeScan() { sc.on = false; clearTimeout(sc.timer); stopStream(); $('#scan').classList.remove('on'); render(); }
+  $('#sClose').onclick = $('#sDone').onclick = $('#sThumb').onclick = closeScan;
+  vid.addEventListener('loadedmetadata', layoutScan);
+  window.addEventListener('resize', function () { if (sc.on) layoutScan(); });
+  document.addEventListener('visibilitychange', function () {      // 다른 앱에 다녀오면 카메라를 다시 연다
+    if (!sc.on) return;
+    if (document.hidden) stopStream();
+    else if (!sc.stream) startStream().catch(function () { closeScan(); });
+  });
+  function quadMove(a, b) { var m = 0; for (var i = 0; i < 4; i++) m = Math.max(m, Math.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1])); return m; }
+  function quadArea(q) { var a = 0; for (var i = 0; i < 4; i++) { var n = q[(i + 1) % 4]; a += q[i][0] * n[1] - n[0] * q[i][1]; } return Math.abs(a) / 2; }
+  function frameSig(img) {                 // 화면 내용 요약(16x16 밝기) → 문서가 바뀌었는지 비교용
+    var N = 16, sig = new Float32Array(N * N), w = img.width, h = img.height, d = img.data;
+    for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+      var x = Math.min(w - 1, ((i + 0.5) * w / N) | 0), y = Math.min(h - 1, ((j + 0.5) * h / N) | 0), s = 0, c = 0;
+      for (var dy = -2; dy <= 2; dy += 2) for (var dx = -2; dx <= 2; dx += 2) {
+        var xx = Math.max(0, Math.min(w - 1, x + dx)), yy = Math.max(0, Math.min(h - 1, y + dy)), p = (yy * w + xx) * 4;
+        s += d[p] + d[p + 1] + d[p + 2]; c += 3;
+      }
+      sig[j * N + i] = s / c;
+    }
+    return sig;
+  }
+  function sigDiff(a, b) { var s = 0; for (var i = 0; i < a.length; i++) s += Math.abs(a[i] - b[i]); return s / a.length; }
+  function drawOverlay(color) {
+    sctx.clearRect(0, 0, sOv.width, sOv.height);
+    if (!sc.quad) return;
+    sctx.beginPath();
+    sc.quad.forEach(function (p, i) { var x = p[0] * sOv.width, y = p[1] * sOv.height; i ? sctx.lineTo(x, y) : sctx.moveTo(x, y); });
+    sctx.closePath(); sctx.fillStyle = color === 'g' ? 'rgba(34,197,94,.22)' : 'rgba(47,123,255,.18)'; sctx.fill();
+    sctx.lineWidth = Math.max(3, sOv.width / 130); sctx.lineJoin = 'round'; sctx.strokeStyle = color === 'g' ? '#22c55e' : '#2f7bff'; sctx.stroke();
+  }
+  function scanTick() {
+    if (!sc.on) return;
+    var next = 140;
+    if (!sc.busy && !$('#editor').classList.contains('on') && vid.readyState >= 2 && vid.videoWidth) {
+      if (!sOv.width) layoutScan();
+      var vw = vid.videoWidth, vh = vid.videoHeight, k = 360 / Math.max(vw, vh), info = null, img;
+      dcv.width = Math.round(vw * k); dcv.height = Math.round(vh * k);
+      dctx.drawImage(vid, 0, 0, dcv.width, dcv.height);
+      try { img = dctx.getImageData(0, 0, dcv.width, dcv.height); info = ScanCore.detectQuadInfo(img); } catch (e) { info = null; }
+      var q = info && info.score >= 0.6 ? info.quad.map(function (p) { return [p[0] / dcv.width, p[1] / dcv.height]; }) : null;
+      if (q && quadArea(q) < 0.1) q = null;
+      sc.sig = img ? frameSig(img) : null;
+      if (sc.lock) {                         // 방금 찍은 문서가 그대로 있으면 다시 찍지 않는다
+        var gone = !q || quadMove(q, sc.lock) > 0.07 || (sc.sig && sc.lockSig && sigDiff(sc.sig, sc.lockSig) > 22);
+        if (gone && Date.now() - sc.lockAt > 1200) sc.lock = null;
+      }
+      sc.stable = q && sc.prev && quadMove(q, sc.prev) < 0.025 ? sc.stable + 1 : (q ? 1 : 0);
+      sc.prev = q; sc.quad = q;
+      var good = q && info.score >= 0.72;
+      if (sc.lock) { drawOverlay('g'); sMsg('✓ 찍었어요 · 다음 문서를 놓거나 "완료"'); }
+      else if (!q) { drawOverlay(); sMsg(sc.auto ? '문서를 비춰 주세요 (어두운 바탕이 좋아요)' : '문서를 비추고 촬영 버튼을 누르세요'); }
+      else if (sc.auto && good && sc.stable >= 3) { drawOverlay('g'); shoot(false); }
+      else { drawOverlay(good && sc.stable >= 2 ? 'g' : 'b'); sMsg(sc.auto ? (good ? '그대로 잠시 멈춰 주세요' : '조금 더 가까이, 문서 전체가 보이게') : '촬영 버튼을 누르세요'); }
+    }
+    sc.timer = setTimeout(scanTick, next);
+  }
+  async function shoot(manual) {
+    if (sc.busy || !vid.videoWidth) return;
+    sc.busy = true;
+    var fl = $('#sFlash'); fl.style.transition = 'none'; fl.style.opacity = '0.85';
+    setTimeout(function () { fl.style.transition = 'opacity .3s'; fl.style.opacity = '0'; }, 60);
+    try {
+      var vw = vid.videoWidth, vh = vid.videoHeight, k = Math.min(1, MAX_SRC / Math.max(vw, vh));
+      var c = document.createElement('canvas'); c.width = Math.round(vw * k); c.height = Math.round(vh * k);
+      c.getContext('2d', { willReadFrequently: true }).drawImage(vid, 0, 0, c.width, c.height);
+      var lockQ = sc.quad, lockS = sc.sig;
+      sMsg('처리 중...'); await tick();
+      var det = detectPts(c);
+      if (!det.info) {
+        if (manual) openEditor(c, -1);                      // 못 찾으면 직접 맞추는 화면으로
+        else sMsg('문서를 다시 비춰 주세요');
+      } else {
+        var page = await buildPage(c, det.pts, { filter: state.filter, ratio: state.ratio, fix: state.fix });
+        state.pages.push(page); scanBadge();
+        if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) {} }
+        sc.lock = lockQ || det.pts.map(function (p) { return [p[0] / c.width, p[1] / c.height]; });
+        sc.lockSig = lockS; sc.lockAt = Date.now(); sc.stable = 0;
+      }
+    } catch (e) { toast('처리 실패: ' + e.message); }
+    sc.busy = false;
+  }
+  $('#sShot').onclick = function () { shoot(true); };
 
   /* ---------- PDF 만들기 / 카카오톡 공유 ---------- */
   function makePdf() {
@@ -474,25 +685,33 @@ main{padding:0 14px 220px}
     a.href = url; a.download = name; a.target = '_blank'; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
   }
+  function showDone(title) { $('#doneTitle').textContent = title; $('#done').classList.add('on'); }
+  function resetAll() { state.pages = []; queue = []; scanBadge(); $('#done').classList.remove('on'); render(); window.scrollTo(0, 0); }
+  $('#newScan').onclick = function () { resetAll(); openScan(); };
+  $('#goHome').onclick = resetAll;
+  $('#stay').onclick = function () { $('#done').classList.remove('on'); };
   $('#shareBtn').onclick = async function () {
     if (!state.pages.length) return;
     store('docscan_name', $('#fileName').value);
     var name = fileBase(), blob = makePdf(), file = new File([blob], name + '.pdf', { type: 'application/pdf' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { await navigator.share({ files: [file], title: name }); }
-      catch (e) { if (e && e.name === 'AbortError') return; toast('공유에 실패해 PDF를 저장합니다'); download(blob, name + '.pdf'); }
-    } else { toast('이 브라우저는 공유를 지원하지 않아 PDF를 저장합니다'); download(blob, name + '.pdf'); }
+      try { await navigator.share({ files: [file], title: name }); showDone('보냈어요'); }
+      catch (e) { if (e && e.name === 'AbortError') return; toast('공유에 실패해 PDF를 저장합니다'); download(blob, name + '.pdf'); showDone('PDF를 저장했어요'); }
+    } else { toast('이 브라우저는 공유를 지원하지 않아 PDF를 저장합니다'); download(blob, name + '.pdf'); showDone('PDF를 저장했어요'); }
   };
   $('#saveBtn').onclick = function () {
     if (!state.pages.length) return;
     store('docscan_name', $('#fileName').value);
     download(makePdf(), fileBase() + '.pdf');
+    setTimeout(function () { showDone('PDF를 저장했어요'); }, 600);
   };
   $('#clearBtn').onclick = function () {
-    if (state.pages.length && confirm('찍은 문서 ' + state.pages.length + '장을 모두 지울까요?')) { state.pages = []; render(); }
+    if (state.pages.length && confirm('찍은 문서 ' + state.pages.length + '장을 지우고 처음 화면으로 갈까요?')) resetAll();
   };
 
   /* ---------- 시작 ---------- */
+  try { var fx = JSON.parse(store('docscan_fix') || 'null'); if (fx) { state.fix.clean = fx.clean !== false; state.fix.straight = fx.straight !== false; } } catch (e) {}
+  var sr = store('docscan_ratio'); if (sr === 'auto' || sr === 'a4' || sr === 'photo') state.ratio = sr;
   var saved = store('docscan_name');
   $('#fileName').value = saved ? saved.replace(/_\d{8}$/, '_' + today()) : '거래명세서_' + today();
   var standalone = window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);

@@ -1,13 +1,10 @@
 /* 오프라인에서도 열리도록 앱 파일을 저장해 두는 서비스 워커 */
-var CACHE = 'docscan-v2';   // 파일을 고치면 이 숫자를 올려야 폰에 새 버전이 들어간다
+var CACHE = 'docscan-v5';
 var FILES = ['./', './index.html', './core.js', './pdf.js', './manifest.webmanifest',
              './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) {
-    // 브라우저 HTTP 캐시를 건너뛰고 서버에서 새로 받아 온다
-    return c.addAll(FILES.map(function (f) { return new Request(f, { cache: 'reload' }); }));
-  }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (keys) {
